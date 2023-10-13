@@ -27,5 +27,4 @@ import org.hibernate.annotations.CreationTimestamp;
         private LocalDateTime createdAt;
 
 
-
     }
