@@ -23,8 +23,8 @@ public class Taskcontroller {
 
 
     @PostMapping("/")
-    public ResponseEntity create(@RequestBody TaskModel taskModel, HttpServletRequest request){
-        var idUser =  request.getAttribute("idUser");
+    public ResponseEntity create(@RequestBody TaskModel taskModel, HttpServletRequest request) {
+        var idUser = request.getAttribute("idUser");
         taskModel.setIdUser((UUID) idUser);
 
         //Validando a Data
@@ -33,18 +33,20 @@ public class Taskcontroller {
         //10/11/2023 Current
         //10/10/2023 startAt
 
-        if(currentDate.isAfter(taskModel.getStartAt())|| currentDate.isAfter(taskModel.getEndAt())){
+        if (currentDate.isAfter(taskModel.getStartAt()) || currentDate.isAfter(taskModel.getEndAt())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("A data de inicio /Data de Termino deve ser maior que a atual");
 
         }
-        if(taskModel.getStartAt().isAfter(taskModel.getEndAt())){
+        if (taskModel.getStartAt().isAfter(taskModel.getEndAt())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("A data de inicio deve ser menor que a data de Termino ");
 
         }
+
+
         var task = this.taskRepository.save(taskModel);
-        return  ResponseEntity.status(HttpStatus.OK).body(task);
+        return ResponseEntity.status(HttpStatus.OK).body(task);
 
     }
 
@@ -56,17 +58,29 @@ public class Taskcontroller {
     }
 
     @PutMapping("/{id}")
-    public TaskModel update(@RequestBody TaskModel taskModel, @PathVariable UUID id, HttpServletRequest request) {
-        var idUser = request.getAttribute("idUser");
-
-        this.taskRepository.findById(id);
-
+    public ResponseEntity<? extends Object> update(@RequestBody TaskModel taskModel, @PathVariable UUID id, HttpServletRequest request) {
         var task = this.taskRepository.findById(id).orElse(null);
 
-        utils.copyNonNullProperties(taskModel,task);  //(source,target)
+        if (task == null) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Tarefa nao encontrada!!!");
 
 
-        return this.taskRepository.save(task);
+        }
+        //Validando usuario Dono
+
+        var idUser = request.getAttribute("idUser");
+
+        if (!task.getIdUser().equals(idUser)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("User sem permissao");
+
+        }
+
+        utils.copyNonNullProperties(taskModel, task);  //(source,target)
+        var taskUpdated = this.taskRepository.save(task);
+        return ResponseEntity.ok().body(taskUpdated);
 
 
     }

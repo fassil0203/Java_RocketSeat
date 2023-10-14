@@ -8,4 +8,7 @@ import java.util.UUID;
 
 public interface ItaskRepository extends JpaRepository<TaskModel, UUID> {
     List<TaskModel> findByIdUser(UUID idUser);      // trazendo uma lista de taskmodel ,baseado no usuario.
+    TaskModel findByIdAndIdUser(UUID id, UUID idUser);
+
+
 }
